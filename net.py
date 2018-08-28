@@ -8,10 +8,15 @@ import chainer.links as L
 
 class Generator(chainer.Chain):
     def __init__(self, n_in, n_latent, n_h):
-        super(Generator, self).__init__()
-        with self.init_scope():
-            lg1 = L.Linear(n_latent, n_h)
+        self.n_latent = n_latent
+
+        super(Generator, self).__init__(
+            lg1 = L.Linear(n_latent, n_h),
             lg2 = L.Linear(n_h, n_in)
+        )
+
+    def make_hidden(self, batchsize):
+        return np.random.normal(0, 1, (batchsize, self.n_latent)).astype(np.float32)
 
     def forward(self, z, sigmoid=True):
         h1 = F.tanh(self.lg1(z))
@@ -24,11 +29,11 @@ class Generator(chainer.Chain):
 
 class Discriminator(chainer.Chain):
     def __init__(self, n_in, n_h):
-        super(Discriminator, self).__init__()
-        with self.init_scope():
-            ld1 = L.Linear(n_in, n_h)
-            ld2 = L.Linear(n_h, n_h)
+        super(Discriminator, self).__init__(
+            ld1 = L.Linear(n_in, n_h),
+            ld2 = L.Linear(n_h, n_h),
             ld3 = L.Linear(n_h, 1)
+        )
 
     def forward(self, x):
         h1 = F.tanh(self.ld1(x))

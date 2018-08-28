@@ -85,7 +85,7 @@ class MnistDataset(dataset.DatasetMixin):
     def __len__(self):
         return self.data_size
 
-    def get_sample(self, i):
+    def get_example(self, i):
         return self.data['data'][i], self.data['target'][i]
 
 if __name__ == '__main__':

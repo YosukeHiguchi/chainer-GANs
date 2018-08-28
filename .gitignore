@@ -3,7 +3,8 @@
 __pycache__
 *.py[co]
 
-notebook/*
 data/*
+notebook/*
+model/*
 
 !.gitkeep

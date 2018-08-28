@@ -19,26 +19,26 @@ from updater import GANUpdater
 
 def main():
     parser = argparse.ArgumentParser(description='GAN practice on MNIST')
-    parser.add_argument('--gpu', '-g', default=-1, type=int,
+    parser.add_argument('--gpu', '-g', type=int, default=-1,
                     help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--epoch', '-e', default=100, type=int,
+    parser.add_argument('--epoch', '-e', type=int, default=100,
                     help='number of epochs to learn')
-    parser.add_argument('--dimz', '-z', default=20, type=int,
+    parser.add_argument('--dimz', '-z', type=int, default=20,
                         help='dimention of encoded vector')
     parser.add_argument('--batchsize', '-b', type=int, default=100,
                         help='learning minibatch size')
-    parser.add_argument('--snapepoch', '-s', default=20, type=int,
+    parser.add_argument('--snapepoch', '-s', type=int, default=10,
                         help='number of epochs to snapshot')
-    parser.add_argument('--outdir', '-o', default='result',
+    parser.add_argument('--out', '-o', type=str, default='model',
                         help='path to the output directory')
-    parser.add_argument('--load_gen_model', default='',
+    parser.add_argument('--load_gen_model', type=str, default='',
                         help='load generator model')
-    parser.add_argument('--load_dis_model', default='',
+    parser.add_argument('--load_dis_model', type=str, default='',
                         help='load generator model')
     args = parser.parse_args()
 
-    if not os.path.exists(args.outdir):
-        os.makedirs
+    if not os.path.exists(args.out):
+        os.makedirs(args.out)
 
     print(args)
 
@@ -66,10 +66,10 @@ def main():
     opt_dis.setup(dis)
 
     dataset = MnistDataset('./data')
-    train, val = chainer.datasets.split_dataset_random(dataset, int(len(dataset) * 0.9))
+    # train, val = chainer.datasets.split_dataset_random(dataset, int(len(dataset) * 0.9))
 
-    train_iter = chainer.iterators.SerialIterator(train, args.batchsize, shuffle=True)
-    val_iter = chainer.iterators.SerialIterator(val, args.batchsize, repeat=False, shuffle=False)
+    train_iter = chainer.iterators.SerialIterator(dataset, args.batchsize, shuffle=True)
+    # val_iter = chainer.iterators.SerialIterator(val, args.batchsize, repeat=False, shuffle=False)
 
     updater = GANUpdater(
         models=(gen, dis),
@@ -84,8 +84,24 @@ def main():
         params={
             'batchsize': args.batchsize,
             'n_latent': args.dimz
-        }
-    )
+        })
+    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out)
+
+    snapshot_interval = (args.snapepoch, 'epoch')
+    display_interval = (100, 'iteration')
+    trainer.extend(extensions.snapshot(filename='snapshot_epoch_{.updater.epoch}.npz'),
+        trigger=snapshot_interval)
+    trainer.extend(extensions.snapshot_object(
+        gen, 'gen{.updater.epoch}.npz'), trigger=snapshot_interval)
+    trainer.extend(extensions.snapshot_object(
+        dis, 'dis{.updater.epoch}.npz'), trigger=snapshot_interval)
+
+    log_keys = ['epoch', 'iteration', 'gen/loss', 'dis/loss']
+    trainer.extend(extensions.LogReport(keys=log_keys, trigger=display_interval))
+    trainer.extend(extensions.PrintReport(log_keys), trigger=display_interval)
+    trainer.extend(extensions.ProgressBar(update_interval=10))
+
+    trainer.run()
 
 if __name__ == '__main__':
     main()
