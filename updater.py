@@ -30,6 +30,15 @@ class GANUpdater(chainer.training.StandardUpdater):
         opt_dis = self._optimizers['dis']
 
         y_real = dis(x_real)
-        z = Variable(xp.random.normal(0, 1, (self.batchsize, self.n_latent))\
-            .astype(np.float32))
-        x_fake = gen()
+        z = Variable(xp.random.normal(0, 1, (self.batchsize, self.n_latent)).astype(np.float32))
+        x_fake = gen(z)
+        y_fake = dis(x_fake)
+
+        t_real = Variable(xp.ones(len(x_real), 1), dtype=np.int32)
+        t_fake = Variable(xp.zeros(len(x_real), 1), dtype=np.int32)
+
+        dis_loss = F.sigmoid_cross_entropy(y_real, t_real)
+        dis_loss += F.sigmoid_cross_entropy(y_fake, t_fake)
+
+        gen_loss = F.sigmoid_cross_entropy(y_fake, t_real)
+
