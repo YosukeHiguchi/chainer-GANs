@@ -5,6 +5,7 @@ from chainer import cuda
 import chainer.functions as F
 import chainer.links as L
 
+
 class Generator(chainer.Chain):
     def __init__(self, n_in, n_latent, n_h):
         super(Generator, self).__init__()
@@ -18,11 +19,11 @@ class Generator(chainer.Chain):
 
         if sigmoid:
             return F.sigmoid(h2)
-        else
+        else:
             return h2
 
 class Discriminator(chainer.Chain):
-    def __init__(self, n_in, h_h):
+    def __init__(self, n_in, n_h):
         super(Discriminator, self).__init__()
         with self.init_scope():
             ld1 = L.Linear(n_in, n_h)

@@ -9,9 +9,12 @@ import numpy as np
 
 import chainer
 from chainer import training
-from chainer import cuda, optimizers, serializers
+from chainer import cuda
+from chainer.training import extensions
 
 import net
+from data import MnistDataset
+from updater import GANUpdater
 
 
 def main():
@@ -26,7 +29,7 @@ def main():
                         help='learning minibatch size')
     parser.add_argument('--snapepoch', '-s', default=20, type=int,
                         help='number of epochs to snapshot')
-    parser.add_argument('--outdir', '-o', default='data',
+    parser.add_argument('--outdir', '-o', default='result',
                         help='path to the output directory')
     parser.add_argument('--load_gen_model', default='',
                         help='load generator model')
@@ -34,13 +37,13 @@ def main():
                         help='load generator model')
     args = parser.parse_args()
 
-    if not os.path.exists(outdir)
+    if not os.path.exists(args.outdir):
         os.makedirs
 
     print(args)
 
 
-    gen = net.Generator(784, n_latent, 500)
+    gen = net.Generator(784, args.dimz, 500)
     dis = net.Discriminator(784, 500)
 
     if args.load_gen_model != '':
@@ -54,8 +57,35 @@ def main():
         cuda.get_device(args.gpu).use()
         gen.to_gpu()
         dis.to_gpu()
-        print('use gpu {}'.format(args.gpu))
+        print('GPU {}'.format(args.gpu))
     xp = np if args.gpu < 0 else cuda.cupy
+
+    opt_gen = chainer.optimizers.Adam()
+    opt_dis = chainer.optimizers.Adam()
+    opt_gen.setup(gen)
+    opt_dis.setup(dis)
+
+    dataset = MnistDataset('./data')
+    train, val = chainer.datasets.split_dataset_random(dataset, int(len(dataset) * 0.9))
+
+    train_iter = chainer.iterators.SerialIterator(train, args.batchsize, shuffle=True)
+    val_iter = chainer.iterators.SerialIterator(val, args.batchsize, repeat=False, shuffle=False)
+
+    updater = GANUpdater(
+        models=(gen, dis),
+        iterator={
+            'main': train_iter
+            },
+        optimizer={
+            'gen': opt_gen,
+            'dis': opt_dis
+            },
+        device=args.gpu,
+        params={
+            'batchsize': args.batchsize,
+            'n_latent': args.dimz
+        }
+    )
 
 if __name__ == '__main__':
     main()
