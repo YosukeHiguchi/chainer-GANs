@@ -15,22 +15,28 @@ from chainer.training import extensions
 import net
 from data import MnistDataset
 from updater import GANUpdater
-
+from visualize import out_generated_image
 
 def main():
+    # This enables a ctr-C without triggering errors
+    import signal
+    signal.signal(signal.SIGINT, lambda x, y: sys.exit(0))
+
     parser = argparse.ArgumentParser(description='GAN practice on MNIST')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                     help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--epoch', '-e', type=int, default=100,
                     help='number of epochs to learn')
-    parser.add_argument('--dimz', '-z', type=int, default=20,
-                        help='dimention of encoded vector')
     parser.add_argument('--batchsize', '-b', type=int, default=100,
                         help='learning minibatch size')
-    parser.add_argument('--snapepoch', '-s', type=int, default=10,
-                        help='number of epochs to snapshot')
     parser.add_argument('--out', '-o', type=str, default='model',
                         help='path to the output directory')
+    parser.add_argument('--dimz', '-z', type=int, default=20,
+                        help='dimention of encoded vector')
+    parser.add_argument('--seed', type=int, default=0,
+                        help='Random seed of z at visualization stage')
+    parser.add_argument('--snapepoch', '-s', type=int, default=10,
+                        help='number of epochs to snapshot')
     parser.add_argument('--load_gen_model', type=str, default='',
                         help='load generator model')
     parser.add_argument('--load_dis_model', type=str, default='',
@@ -100,6 +106,9 @@ def main():
     trainer.extend(extensions.LogReport(keys=log_keys, trigger=display_interval))
     trainer.extend(extensions.PrintReport(log_keys), trigger=display_interval)
     trainer.extend(extensions.ProgressBar(update_interval=10))
+
+    trainer.extend(out_generated_image(gen, 10, 10, args.seed, args.out),
+        trigger=(1, 'epoch'))
 
     trainer.run()
 

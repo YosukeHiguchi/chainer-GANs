@@ -6,7 +6,7 @@ import numpy as np
 import chainer
 
 import net
-from visualize import out_generated_image
+from visualize import generate_image
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     chainer.serializers.load_npz(args.genpath, gen)
     print('Generator model loaded successfully from {}'.format(args.genpath))
 
-    out_generated_image(gen, 10, 10, 0, args.out)
+    generate_image(gen, 10, 10, 0, args.out + '/image.png')
 
 if __name__ == '__main__':
     main()

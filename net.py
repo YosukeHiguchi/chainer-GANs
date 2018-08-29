@@ -17,6 +17,7 @@ class Generator(chainer.Chain):
 
     def make_hidden(self, batchsize):
         return np.random.normal(0, 1, (batchsize, self.n_latent)).astype(np.float32)
+        # return np.random.uniform(-1, 1, (batchsize, self.n_latent)).astype(np.float32)
 
     def forward(self, z, sigmoid=True):
         h1 = F.tanh(self.lg1(z))
