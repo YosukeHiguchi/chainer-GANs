@@ -10,8 +10,8 @@ import chainer.links as L
 class GANUpdater(chainer.training.StandardUpdater):
     def __init__(self, *args, converter=convert.concat_examples, device=None, **kwargs):
         self.gen, self.dis = kwargs.pop('models')
-        self._iterators = kwargs.pop('iterator')
-        self._optimizers = kwargs.pop('optimizer')
+        self._iterators = kwargs.pop('iterators')
+        self._optimizers = kwargs.pop('optimizers')
         self.converter = converter
         self.device = device
         self.iteration = 0
