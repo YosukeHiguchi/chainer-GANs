@@ -79,13 +79,13 @@ def main():
 
     updater = GANUpdater(
         models=(gen, dis),
-        iterator={
+        iterators={
             'main': train_iter
-            },
-        optimizer={
+        },
+        optimizers={
             'gen': opt_gen,
             'dis': opt_dis
-            },
+        },
         device=args.gpu,
         params={
             'batchsize': args.batchsize,
