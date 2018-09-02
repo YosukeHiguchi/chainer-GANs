@@ -7,4 +7,6 @@ data/*
 notebook/*
 model/*
 
+*.dot
+
 !.gitkeep
