@@ -19,7 +19,7 @@ class Generator(chainer.Chain):
         return np.random.normal(0, 1, (batchsize, self.n_latent)).astype(np.float32)
         # return np.random.uniform(-1, 1, (batchsize, self.n_latent)).astype(np.float32)
 
-    def forward(self, z, sigmoid=True):
+    def __call__(self, z, sigmoid=True):
         h1 = F.tanh(self.lg1(z))
         h2 = self.lg2(h1)
 
@@ -36,7 +36,7 @@ class Discriminator(chainer.Chain):
             ld3 = L.Linear(n_h, 1)
         )
 
-    def forward(self, x):
+    def __call__(self, x):
         h1 = F.tanh(self.ld1(x))
         h2 = F.tanh(self.ld2(h1))
         p = self.ld3(h2)
