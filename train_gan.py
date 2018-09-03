@@ -53,10 +53,10 @@ def main():
     dis = net.Discriminator(784, 500)
 
     if args.load_gen_model != '':
-        serializers.load_npz(args.load_gen_model, gen)
+        chainer.serializers.load_npz(args.load_gen_model, gen)
         print('Generator model loaded successfully!')
     if args.load_dis_model != '':
-        serializers.load_npz(args.load_dis_model, dis)
+        chainer.serializers.load_npz(args.load_dis_model, dis)
         print('Discriminator model loaded successfully!')
 
     if args.gpu >= 0:
